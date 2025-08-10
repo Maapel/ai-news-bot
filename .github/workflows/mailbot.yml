@@ -1,0 +1,37 @@
+# This file defines the GitHub Action workflow
+name: Run Daily News Mail Bot
+
+on:
+  # This is the schedule trigger.
+  # "0 8 * * *" is a cron string that means "run at 8:00 AM UTC every day".
+  # You can change this time. For example, "0 2 * * *" would be 7:30 AM in India.
+  schedule:
+    - cron: '0 2 * * *'
+  # This allows you to run the bot manually from the Actions tab on GitHub.
+  workflow_dispatch:
+
+jobs:
+  build-and-send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run the mail bot script
+        # This step securely passes your secrets to the Python script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          MAILBOT_SENDER_EMAIL: ${{ secrets.MAILBOT_SENDER_EMAIL }}
+          MAILBOT_APP_PASSWORD: ${{ secrets.MAILBOT_APP_PASSWORD }}
+          MAILBOT_RECIPIENT_EMAIL: ${{ secrets.MAILBOT_RECIPIENT_EMAIL }}
+        run: python main.py
